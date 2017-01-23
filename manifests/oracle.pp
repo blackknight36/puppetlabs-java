@@ -166,6 +166,12 @@ define java::oracle (
       $destination_dir = '/tmp/'
       $creates_path = "/usr/java/${install_path}"
     }
+
+    'Darwin': {
+      $os = 'macosx'
+      $package_type = 'dmg'
+    }
+
     default : {
       fail ( "unsupported platform ${::kernel}" ) }
   }
@@ -199,6 +205,9 @@ define java::oracle (
     'tgz' : {
       $package_name = "${java_se}-${release_major}-${os}-${arch}.tar.gz"
     }
+    'dmg': {
+      $package_name = "${java_se}-${release_major}-${os}-${arch}.dmg"
+    }
     default : {
       $package_name = "${java_se}-${release_major}-${os}-${arch}.rpm"
     }
@@ -221,7 +230,11 @@ define java::oracle (
     'tgz': {
       $install_command = "mv ${install_path} /usr/java/${install_path}"
     }
-
+    'dmg': {
+      $update_release = split($release_major, 'u')[1]
+      $pname = "JDK ${version} Update ${update_release}"
+      $install_command = "hdiutil attach /tmp/${package_name} && installer -package /Volumes/${pname}/${pname}.pkg -target LocalSystem"
+    }
     default : {
       $install_command = "rpm -iv ${destination}"
     }
